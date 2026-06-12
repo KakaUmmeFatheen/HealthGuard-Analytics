@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthGuard Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+        body { background:linear-gradient(135deg,#dff7ff,#e9fff1); overflow-x:hidden; color:#164863; }
+        body::before { content:'🍃'; font-size:120px; position:fixed; top:20px; left:20px; opacity:0.08; animation:float 6s ease-in-out infinite; }
+        body::after { content:'🌿'; font-size:140px; position:fixed; bottom:20px; right:20px; opacity:0.08; animation:float 7s ease-in-out infinite; }
+        @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-15px); } }
+        header { padding:25px; text-align:center; background:rgba(255,255,255,0.4); backdrop-filter:blur(12px); box-shadow:0 8px 30px rgba(0,0,0,0.05); }
+        .logo { font-size:2.2rem; font-weight:800; color:#1f7a8c; }
+        .tagline { margin-top:8px; font-size:1rem; color:#447; }
+        .hero { padding:60px 20px; text-align:center; }
+        .hero h1 { font-size:3rem; font-weight:800; color:#0c6170; }
+        .hero p { max-width:800px; margin:20px auto; line-height:1.8; font-size:1rem; }
+        
+        .btn { padding:15px 35px; border:none; border-radius:50px; background:#4bc0c8; color:white; font-weight:700; cursor:pointer; transition:0.3s; margin: 5px; display: inline-block; }
+        .btn:hover { transform:translateY(-3px); box-shadow: 0 5px 15px rgba(75, 192, 200, 0.4); }
+        .btn-secondary { background: #1f7a8c; }
+        .btn-secondary:hover { box-shadow: 0 5px 15px rgba(31, 122, 140, 0.4); }
+        .btn-danger { background: #ff6b6b; padding: 8px 18px; font-size: 13px; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; color: white; }
+        .btn-danger:hover { background: #ee5b5b; }
+
+        .container { width:90%; max-width:1200px; margin:auto; }
+        .card { background:rgba(255,255,255,0.5); backdrop-filter:blur(15px); border-radius:25px; padding:30px; margin:25px 0; box-shadow:0 10px 30px rgba(0,0,0,0.08); position: relative; }
+        .section-title-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .section-title { font-size:1.8rem; font-weight:700; color:#0c6170; }
+        .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; }
+        .input-group { display:flex; flex-direction:column; }
+        .input-group-full { grid-column: 1 / -1; display:flex; flex-direction:column; }
+        
+        label { font-weight:600; margin-bottom:8px; }
+        input,select { padding:12px; border-radius:12px; border:2px solid #c7f3ef; outline:none; font-size:15px; background: white; }
+        input:focus, select:focus { border-color:#4bc0c8; }
+        .results { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; }
+        .result-card { background:white; padding:25px; border-radius:20px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,0.06); }
+        .result-card h3 { margin-bottom:10px; }
+        .score { font-size:2.5rem; font-weight:800; color:#0c6170; transition: color 0.4s ease; }
+        
+        /* Dynamic Indicator Colors */
+        .risk-low { color: #2ecc71 !important; }
+        .risk-medium { color: #f1c40f !important; }
+        .risk-high { color: #e74c3c !important; }
+
+        /* Color Legend Styles */
+        .color-legend { display: flex; justify-content: space-around; background: #fff; padding: 15px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); flex-wrap: wrap; gap: 10px; }
+        .legend-item { display: flex; align-items: center; font-size: 14px; font-weight: 600; }
+        .legend-dot { width: 15px; height: 15px; border-radius: 50%; margin-right: 8px; }
+        .dot-green { background: #2ecc71; }
+        .dot-yellow { background: #f1c40f; }
+        .dot-red { background: #e74c3c; }
+
+        .chart-container { padding:20px; background:white; border-radius:20px; height: 300px; position: relative; }
+        #recommendations, #importanceFactors, #historyContainer { line-height:2; }
+        .footer { text-align:center; padding:40px; margin-top:50px; font-size:15px; font-weight: 600; color: #1f7a8c; border-top: 1px solid rgba(0,0,0,0.05); letter-spacing: 0.5px; }
+        .badge { display:inline-block; padding:8px 15px; border-radius:20px; background:#d4fff2; margin:5px; font-weight:600; }
+        .ethics-box { background:#f6fffb; padding:20px; border-left:5px solid #4bc0c8; border-radius:10px; line-height:1.8; }
+        @media(max-width:768px){ .hero h1 { font-size:2rem; } .logo { font-size:1.8rem; } }
+
+        @media print {
+            body::before, body::after, .hero, #predictBtn, #printBtn, .btn-danger, header { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .card { box-shadow: none !important; border: 1px solid #ccc !important; background: white !important; page-break-inside: avoid; }
+            .container { width: 100% !important; max-width: 100% !important; margin: 0 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">🏥 HealthGuard Analytics</div>
+    <div class="tagline">Predictive Healthcare Risk Assessment Dashboard</div>
+</header>
+
+<section class="hero">
+    <h1>Healthcare Predictive Analytics</h1>
+    <p>Assess potential diabetes and heart disease risks using health indicators, feature importance analysis, interactive visualizations and ethical AI principles.</p>
+    <button class="btn" id="startBtn">Start Assessment</button>
+</section>
+
+<div class="container">
+    <div class="card">
+        <h2 class="section-title" style="margin-bottom:20px;">🩺 Patient Assessment Form</h2>
+        <div class="form-grid">
+            <div class="input-group-full"><label>Patient Full Name</label><input type="text" id="patientName" placeholder="Enter patient's full name"></div>
+            
+            <div class="input-group"><label>Age</label><input type="number" id="age" placeholder="e.g. 52"></div>
+            <div class="input-group">
+                <label>Gender</label>
+                <select id="gender"><option>Male</option><option>Female</option></select>
+            </div>
+            
+            <div class="input-group-full"><label>Patient Email Address</label><input type="email" id="patientEmail" placeholder="name@example.com (Optional for records)"></div>
+
+            <div class="input-group"><label>BMI</label><input type="number" id="bmi" placeholder="e.g. 28"></div>
+            <div class="input-group"><label>Blood Glucose</label><input type="number" id="glucose" placeholder="e.g. 150"></div>
+            <div class="input-group"><label>Blood Pressure (Systolic)</label><input type="number" id="bp" placeholder="e.g. 135"></div>
+            <div class="input-group"><label>Cholesterol</label><input type="number" id="cholesterol" placeholder="e.g. 220"></div>
+            <div class="input-group"><label>Heart Rate</label><input type="number" id="heartRate" placeholder="e.g. 80"></div>
+            <div class="input-group">
+                <label>Smoking Status</label>
+                <select id="smoking"><option>No</option><option>Yes</option></select>
+            </div>
+            <div class="input-group">
+                <label>Exercise Level</label>
+                <select id="exercise"><option>High</option><option>Moderate</option><option>Low</option></select>
+            </div>
+            <div class="input-group">
+                <label>Family History Diabetes</label>
+                <select id="familyDiabetes"><option>No</option><option>Yes</option></select>
+            </div>
+            <div class="input-group">
+                <label>Family History Heart Disease</label>
+                <select id="familyHeart"><option>No</option><option>Yes</option></select>
+            </div>
+        </div>
+        <br>
+        <button class="btn" id="predictBtn">Analyze Health Risk</button>
+        <button class="btn btn-secondary" id="printBtn">Export Report (PDF)</button>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title" style="margin-bottom:15px;">📊 Prediction Results</h2>
+        
+        <div class="color-legend">
+            <div class="legend-item"><div class="legend-dot dot-green"></div> 🟢 Green: Safe / Green Flag (0% - 30%)</div>
+            <div class="legend-item"><div class="legend-dot dot-yellow"></div> 🟡 Yellow: Minor Control & Consistency Required (31% - 60%)</div>
+            <div class="legend-item"><div class="legend-dot dot-red"></div> 🔴 Red: High Consistency / Action Plan Needed (Above 60%)</div>
+        </div>
+
+        <div class="results">
+            <div class="result-card"><h3>Diabetes Risk</h3><div class="score risk-low" id="diabetesRisk">0%</div></div>
+            <div class="result-card"><h3>Heart Disease Risk</h3><div class="score risk-low" id="heartRisk">0%</div></div>
+            <div class="result-card"><h3>Overall Health Score</h3><div class="score" id="healthScore">100</div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title" style="margin-bottom:20px;">🔍 Feature Importance Analysis</h2>
+        <div id="importanceFactors">Awaiting assessment...</div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title" style="margin-bottom:20px;">💚 Personalized Recommendations</h2>
+        <div id="recommendations">Awaiting assessment...</div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title" style="margin-bottom:20px;">📈 Health Visualization</h2>
+        <div class="chart-container">
+            <canvas id="riskChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-title-container">
+            <h2 class="section-title">🗂 Patient Assessment History</h2>
+            <button class="btn btn-danger" id="clearHistoryBtn">🧹 Clear History</button>
+        </div>
+        <div id="historyContainer">No history available.</div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title" style="margin-bottom:20px;">📚 Dataset & Analytics</h2>
+        <div class="badge">Kaggle Datasets</div>
+        <div class="badge">Data Normalization</div>
+        <div class="badge">Classification Models</div>
+        <div class="badge">Feature Importance</div>
+        <p style="margin-top:20px;line-height:1.8;">
+            This educational project demonstrates healthcare predictive analytics using publicly available healthcare datasets, normalization techniques and classification-inspired risk scoring methodologies.
+        </p>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title" style="margin-bottom:20px;">🔒 Privacy & Ethical AI</h2>
+        <div class="ethics-box">
+            ✔ No personal identifiers required<br>
+            ✔ Data processed locally in browser<br>
+            ✔ No automatic sharing of information<br>
+            ✔ User consent before analysis<br>
+            ✔ Educational use only<br><br>
+            <b>Disclaimer:</b> This application is intended for educational and demonstration purposes and should not be used as a substitute for professional medical diagnosis.
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    HealthGuard App by fatheen © 2026
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let chart;
+
+document.addEventListener("DOMContentLoaded", function() {
+    loadHistory();
+
+    const startBtn = document.getElementById("startBtn");
+    if(startBtn) {
+        startBtn.onclick = function() {
+            document.querySelector(".container").scrollIntoView({ behavior: "smooth" });
+        };
+    }
+
+    const predictBtn = document.getElementById("predictBtn");
+    if(predictBtn) {
+        predictBtn.onclick = function() {
+            analyzeHealth();
+        };
+    }
+
+    const clearBtn = document.getElementById("clearHistoryBtn");
+    if(clearBtn) {
+        clearBtn.onclick = function() {
+            if(confirm("Are you sure you want to clear your entire health assessment history?")) {
+                localStorage.removeItem("healthHistory");
+                loadHistory();
+            }
+        };
+    }
+
+    const printBtn = document.getElementById("printBtn");
+    if(printBtn) {
+        printBtn.onclick = function() {
+            window.print();
+        };
+    }
+});
+
+function getRiskColorClass(percentage) {
+    if (percentage <= 30) return "risk-low";
+    if (percentage <= 60) return "risk-medium";
+    return "risk-high";
+}
+
+function analyzeHealth() {
+    const pName = document.getElementById("patientName").value.trim() || "Anonymous Patient";
+    const age = Number(document.getElementById("age").value) || 0;
+    const bmi = Number(document.getElementById("bmi").value) || 0;
+    const glucose = Number(document.getElementById("glucose").value) || 0;
+    const bp = Number(document.getElementById("bp").value) || 0;
+    const cholesterol = Number(document.getElementById("cholesterol").value) || 0;
+    const heartRate = Number(document.getElementById("heartRate").value) || 0;
+
+    const smoking = document.getElementById("smoking").value;
+    const exercise = document.getElementById("exercise").value;
+    const familyDiabetes = document.getElementById("familyDiabetes").value;
+    const familyHeart = document.getElementById("familyHeart").value;
+
+    if (age === 0 || bmi === 0 || glucose === 0 || bp === 0 || cholesterol === 0 || heartRate === 0) {
+        alert("Please completely fill out all health fields (Age, BMI, Glucose, BP, Cholesterol, Heart Rate).");
+        return;
+    }
+
+    let diabetesRisk = 0;
+    let heartRisk = 0;
+    let factors = [];
+
+    if (age > 45) { diabetesRisk += 15; factors.push("Age above 45"); }
+    if (bmi >= 30) { diabetesRisk += 25; factors.push("High BMI (Obesity Indicator)"); }
+    if (glucose >= 140) { diabetesRisk += 35; factors.push("High Blood Glucose"); }
+    if (familyDiabetes === "Yes") { diabetesRisk += 15; factors.push("Family History of Diabetes"); }
+    if (exercise === "Low") { diabetesRisk += 10; factors.push("Low Physical Activity"); }
+
+    if (age > 50) { heartRisk += 15; factors.push("Higher Cardiac Age Risk"); }
+    if (bp >= 140) { heartRisk += 20; factors.push("High Blood Pressure (Hypertension)"); }
+    if (cholesterol >= 240) { heartRisk += 25; factors.push("High Cholesterol Level"); }
+    if (smoking === "Yes") { heartRisk += 25; factors.push("Smoking"); }
+    if (familyHeart === "Yes") { heartRisk += 15; factors.push("Family History of Heart Disease"); }
+    if (exercise === "Low" && !factors.includes("Low Physical Activity")) { heartRisk += 10; factors.push("Low Physical Activity"); }
+
+    diabetesRisk = Math.min(diabetesRisk, 100);
+    heartRisk = Math.min(heartRisk, 100);
+    const healthScore = 100 - Math.round((diabetesRisk + heartRisk) / 2);
+
+    const dRiskElem = document.getElementById("diabetesRisk");
+    const hRiskElem = document.getElementById("heartRisk");
+    
+    dRiskElem.className = "score " + getRiskColorClass(diabetesRisk);
+    hRiskElem.className = "score " + getRiskColorClass(heartRisk);
+
+    dRiskElem.innerHTML = diabetesRisk + "%";
+    hRiskElem.innerHTML = heartRisk + "%";
+    document.getElementById("healthScore").innerHTML = healthScore;
+
+    let importanceHTML = "";
+    if (factors.length === 0) {
+        importanceHTML = "✅ No major risk indicators detected.";
+    } else {
+        importanceHTML = "<ul>" + factors.map(item => `<li>⚠️ ${item}</li>`).join("") + "</ul>";
+    }
+    document.getElementById("importanceFactors").innerHTML = importanceHTML;
+
+    let recommendations = [];
+    if (diabetesRisk >= 60) {
+        recommendations.push("🍎 Monitor blood glucose regularly.");
+        recommendations.push("🏃 Increase physical activity.");
+        recommendations.push("🥗 Reduce sugar and refined carbohydrates.");
+    }
+    if (heartRisk >= 60) {
+        recommendations.push("❤️ Schedule regular cardiovascular checkups.");
+        recommendations.push("🚭 Avoid smoking.");
+        recommendations.push("🥬 Follow a heart-healthy diet.");
+    }
+    if (exercise === "Low") {
+        recommendations.push("🚶 Aim for at least 30 minutes of daily activity.");
+    }
+    if (recommendations.length === 0) {
+        recommendations.push("🌟 Maintain your healthy lifestyle habits.");
+    }
+    document.getElementById("recommendations").innerHTML = recommendations.join("<br>");
+
+    drawChart(diabetesRisk, heartRisk);
+
+    saveHistory({
+        name: pName,
+        date: new Date().toLocaleString(),
+        diabetesRisk,
+        heartRisk,
+        healthScore
+    });
+
+    loadHistory();
+}
+
+function drawChart(diabetesRisk, heartRisk) {
+    const canvasElement = document.getElementById("riskChart");
+    if(!canvasElement) return;
+    const ctx = canvasElement.getContext("2d");
+
+    if (chart) {
+        chart.destroy();
+    }
+
+    const diabeColor = diabetesRisk <= 30 ? "#2ecc71" : (diabetesRisk <= 60 ? "#f1c40f" : "#e74c3c");
+    const heartColor = heartRisk <= 30 ? "#2ecc71" : (heartRisk <= 60 ? "#f1c40f" : "#e74c3c");
+
+    chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: ["Diabetes Risk", "Heart Disease Risk"],
+            datasets: [{
+                label: "Risk Percentage (%)",
+                data: [diabetesRisk, heartRisk],
+                backgroundColor: [diabeColor, heartColor]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 100 }
+            }
+        }
+    });
+}
+
+function saveHistory(record) {
+    let history = JSON.parse(localStorage.getItem("healthHistory")) || [];
+    history.unshift(record);
+    if (history.length > 10) history.pop();
+    localStorage.setItem("healthHistory", JSON.stringify(history));
+}
+
+function loadHistory() {
+    let history = JSON.parse(localStorage.getItem("healthHistory")) || [];
+    const container = document.getElementById("historyContainer");
+    if (!container) return;
+
+    if (history.length === 0) {
+        container.innerHTML = "No history available.";
+        return;
+    }
+
+    let html = "";
+    history.forEach(item => {
+        const displayName = item.name ? item.name : "Anonymous Patient";
+        html += `
+        <div style="background:white; padding:15px; margin-bottom:10px; border-radius:15px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+            <b>📅 ${item.date}</b> — <span style="color:#1f7a8c; font-weight:600;">👤 ${displayName}</span><br>
+            Diabetes Risk: <span class="${getRiskColorClass(item.diabetesRisk)}" style="font-weight:700">${item.diabetesRisk}%</span> | 
+            Heart Disease Risk: <span class="${getRiskColorClass(item.heartRisk)}" style="font-weight:700">${item.heartRisk}%</span> | 
+            <strong>Health Score: ${item.healthScore}</strong>
+        </div>`;
+    });
+    container.innerHTML = html;
+}
+</script>
+</body>
+  </html>
